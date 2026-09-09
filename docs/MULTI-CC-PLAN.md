@@ -27,15 +27,18 @@
 
 ## 2. 开第二、第三个会话的步骤(Windows 11 + Windows Terminal)
 
-1. 开 Windows Terminal,按 `Ctrl+Shift+T` 开新标签。
-2. `cd C:\Users\lim_2\Documents\<该会话的目录>`。
-3. 输入 `claude`(全新)或 `claude --continue`(接回该目录里最近一次对话)。
-4. 进去后输入 `/rc`,等它显示已连上远程控制。
-5. 第一条消息先贴代号,例如「我是 CC-B social-engine」,再贴 `docs/kickoff/` 里对应的整段提示词。我在云端会用会话标题认它。
-6. `Shift+Tab` 切权限模式:CC-A / CC-B 用 default(会弹窗),CC-C 可以 auto。
+以下步骤已对照 Claude Code 官方文档核实(2026-09-10):
 
-重启电脑或关掉终端后:同一目录 `claude --continue` 能接回对话内容,但 `/rc` 会得到一个新的会话 ID,我会重新扫描并派单,你不用告诉我 ID。
+1. 开 Windows Terminal,按 `Ctrl+Shift+T` 开新标签;右键标签 → Rename Tab 改成会话代号(CC-A / CC-B / CC-C)。
+2. `cd C:\Users\lim_2\Documents\<该会话的目录>`(worktree 从它自己的目录进,不要在主仓库里进 worktree 子目录)。
+3. 第一次:`claude -n CC-B`(给会话命名);以后接回:`claude --resume CC-B`。同一目录多个会话时不要用 `claude --continue`,它只接最近的那一个。
+4. 进去后输入 `/rc CC-B`(带名字,手机端列表就叫这个名)。页脚出现 `/rc active` 即接上。
+5. 第一条消息贴 `docs/kickoff/` 里对应的整段提示词。我在云端用会话标题认它。
+6. `Shift+Tab` 循环切权限模式(auto → default → acceptEdits → plan);Windows 上没反应就按 `Alt+M`。CC-A / CC-B 用 default(发帖、部署会弹窗到手机),CC-C 可 auto。手机端只能选 Manual / Accept edits / Plan,选不了 Auto。
 
+重启电脑或关掉终端后:同一目录 `claude --resume <名字>` 接回完整对话,并自动重连**同一个**远程会话 ID(2026-09-09 实测:CC-A 重启后 ID 不变)。只有当你在手机上删过该会话、或在电脑上手动关过 /rc 再退出时,才会得到新 ID;我会重新扫描并派单,你不用告诉我 ID。
+
+同一仓库开第二个会话的官方做法是 git worktree(`git worktree add ..\wabot-intel -b intel/telegram-corpus`,CC-A 已建),Claude Code 会阻止 worktree 里的会话改主目录的文件。worktree 是全新 checkout,`.env` 等被 gitignore 的文件不会自动出现。
 ## 3. 派单与汇报协议
 
 - 每个会话根目录一个 `TASK.md`(当前任务 / 状态 / 下一步)+ `HANDOFF-next-session.md`;每轮结束 `git commit`,**不 push**。
@@ -51,10 +54,11 @@
 
 ## 5. 限额与节奏
 
-- 同一账号共享 5 小时窗口 + 周限额;并行会更快耗尽。
-- 优先级:CC-A(线上收入相关)> CC-B(新增长)> CC-C(分析,可随时暂停)。
-- 我会看每个会话的 rate_limit_info,接近上限就先停 CC-C。
-
+- 用量限制是账号级的:5 小时滚动窗口 + 周限额,claude.ai 聊天、Claude Code、手机 App 全部算在一起;并行 N 个会话大约按 N 倍消耗。2026-09-09 晚三个会话并行 3 小时就撞到了 5 小时窗口(03:30 MYT 重置)。
+- 优先级:CC-A(线上收入相关)> CC-B(新增长)> CC-C(分析,可随时暂停)。接近上限先停 CC-C。
+- 撞限后:终端里的会话会显示「Usage limit reached · continuing automatically at …」自动等待;从手机端操作的会话不会自动等,需要回电脑输入 `/rate-limit-options`。
+- 每条请求都会重发整段对话;会话太长时先让它把状态写进 TASK.md,再 `/compact`。
+- 在任一会话输入 `/usage` 看窗口余量。
 ## 6. 云端已经开始做的(不需要你)
 
 - 5 个 skill 的调研与安装命令核实 → `docs/SKILLS-EVAL.md` + `docs/install-skills.ps1`
