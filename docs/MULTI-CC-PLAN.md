@@ -44,6 +44,7 @@
 - 每个会话根目录一个 `TASK.md`(当前任务 / 状态 / 下一步)+ `HANDOFF-next-session.md`;每轮结束 `git commit`,**不 push**。
 - 共享资源归属:只有 CC-A 能改 wabot 的 `versions/` 与线上;CC-C 只在 worktree 分支 `intel/*` 改 `tools/`、`products-input/`,合并由 CC-A 审后做;CC-B 独立仓库,但要用 wabot 的 n8n / Supabase 凭证时,凭证放在 CC-B 目录的 `.env`(不进 git),不复制 wabot 的文件。
 - 我每小时巡检一次;会话停在权限提示(pending_action)超过 20 分钟,我会在这里提醒你。
+- 派单消息大小:fire_trigger 附带 40 KB 以上的文本会送不到本地会话(返回一个不存在的会话 ID)。长文档分段发,每段 ≤ 15 KB,放在触发器的 prompt 里,让会话按段号拼接。2026-09-10 送 SPEC 时踩过。
 - 铁律对所有会话一致:不 push、不打印 token、不用 REST 改 Active、凭证类与破坏性操作先问你、改 Brain 走三段哈希 + harness 回归。
 
 ## 4. 每个会话的第一阶段任务
