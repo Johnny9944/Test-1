@@ -1,0 +1,144 @@
+# SPEC-social-engine 评审记录(2026-09-10)
+
+## 修订清单(changes_made)
+
+- §3.4 部署核对:verify-deploy 改为核对 n8n 2.x 的 activeVersion(已发布快照)而非顶层草稿——检查 active==true、activeVersion 非 null、activeVersion 归一化 sha256 == versions/、草稿 == activeVersion,DEPLOY-LOG 以 workflow id 为主键并记 activeVersion.versionId;SE-08 日报加「SE-* 已发布 N/M」兜底(来源:n8n public-api workflow.yml / activeVersion.yml)。
+- §3.4 部署/回滚 SOP:标明官方文档称 UI 导入总是新建 ID、可能取消发布(待实测);Phase 0a(任何真实导入之前)用 dummy 工作流实测两条导入路径并写 docs/DEPLOY-SOP.md;回滚优先 Workflow history → Restore → Publish(社区版 24h),versions/ 作为超 24h 的回滚来源;同名两流同时 active 由 verify-deploy 判失败。
+- §2/§3.2/§3.3 Threads:推翻「n8n OAuth2 凭证可拿 60 天 token」与「n8n 无更新凭证端点」;改用 Header Auth 凭证存长期 token,新增 SE-00T Threads Auth(code → 短期 → th_exchange_token 长期 → PATCH /credentials/{id} 写回;第 50 天 th_refresh_token 再 PATCH),执行数据不保存;n8n 是否持有自己的 API key 列为老板拍板项,不批准则保留人工点链接。
+- §3.3 凭证与执行数据:禁用 n8n「Facebook Graph API」凭证(token 进 query string),Meta/Threads 一律 HTTP Request + Header Auth Bearer;错误分支只提取 error.code/message/fbtrace_id;新增 §3.0 说明社区版无脱敏、#12118、advisory GHSA-q3j5-8vrg-4p9q,要求 n8n ≥2.28.1(kickoff 加版本检查,低于则请老板升级);发布/探针/Auth 工作流成功失败都不保存;验收实际打开一次执行记录。
+- kickoff 铁律/API key:明确 API key 全权限无作用域,只放本地 .env(先 .gitignore 再 git init)、不进任何工作流/Supabase/文档;所有 REST 调用集中在 tools/n8n-get.mjs 只实现 GET,禁止别处 curl;DEPLOY-LOG 记每次 REST 调用类型;老板在 Settings → n8n API 一键撤销。
+- §3.2/§5/§6 Telegram 分流:新增 SE-00 Social Bot Router(唯一 Telegram Trigger,按 callback_data 前缀分发到 SE-01b/SE-07/SE-09/SE-06 及素材入库);审批、日报、内容包、停号/恢复等带按钮消息全部改由 social bot 发送,Monitor v2 bot 只发纯文本告警;日报示例改为 social bot 发并带成交按钮。
+- §5/kickoff 任务 0:新增 R22.8 来源码解析兼容性检查——CC-B 只读 GET 拉 R22.8 JSON 写明对 #FB_DNG_0911A 的行为,不兼容则 CC-A 改主线正则(需老板批准)或新码改两段式 #FB_DNG 0911A;SE-07 正则同时接受 _ 与空格;验收前用测试消息在主线验证;标「待核实」。
+- SE-06 停号防抖与恢复:只有 190/200/10 计失败且连续 2 次(30 分钟后重探)才 is_active=false + P1;1/2/4/17/613 只告警重探不停号;368 不重试;停号消息附「恢复」按钮(经 SE-00),下次探针成功自动恢复并告警;platform_credentials 加 consecutive_failures、last_error_code;种子加 probe-test 假凭证供验收(来源:github.com/phwd/fbec)。
+- §7 Phase 0 时间表:改为 7–10 个工作日,拆 0a(.env/版本核对/任务 0/只读封装 + verify-deploy + dummy 导入实测 SOP/建表+角色+种子/SE-00 最小版/SE-07/v3.10)与 0b(SE-06/SE-08/cron 真跑制造失败/执行记录检查);SPEC 与 kickoff 验收清单统一为同一份 9 项并同序;验收改为「任一条经 wa.me 预填首句进线,允许老板测试号,CC-A 先确认主线不把该号当黑名单」。
+- kickoff 上下文修正:改为「目录全新、本地无 wabot 文件、凭证由老板放进 .env 或 n8n Credentials」;第一步索要 .env 清单(N8N_BASE_URL、N8N_API_KEY、SUPABASE_URL、SUPABASE_SERVICE_KEY、TG_SOCIAL_CHAT_ID);确认 SPEC 已在目录(云端主控会随消息发全文);用 GET /workflows 记录 R22.8/FB Engine/Monitor v2 的 id 与凭证名;任务 5(v3.10)注明老板已原则同意仍需 diff 过目;env/重启类改动列入铁律 4;补 4 条线代码、时区、中文沟通、无 staging、n8n 版本要求。
+- §3.1 Supabase:n8n 改用 Postgres 节点直连(说明 PostgREST 自定义 schema 需 Exposed schemas + GRANT 否则 PGRST106);001_social_schema.sql 建专用角色 social_engine(social 全权、主线表仅 SELECT、不能直读 Vault),n8n SE-* 凭证只用该角色;service key 只留给 CC-B 本地一次性建表。
+- §4/§8/§10 合规数字与 Gate:KKLIU 改为官方申请费 RM100/份(代办 RM50–500)、5 个工作日仅非网站广告、网站/社媒类 30 天、有效 3 年;Gate 疾病词/功效词对所有 SKU 一律 block 与 MAL 无关(Act 290 第 3 条 + Food Regulations 1985 reg.18),MAL+KKLIU 只决定能否提功效;删除「食品类无 MAL 不拦」;Act 290 附表 20 种疾病全列。
+- §3.1/§8 指标漂移:metrics_daily 核心字段改为 views/viewers/reactions/comments/shares/saves/redirect_clicks,reach/impressions 等标 deprecated 只存 raw;写明 2025-11-15 与 2026-06-15 两批弃用清单与替代指标;metric_map 初始版本改为 Phase 1 第一项任务由老板在 Graph API Explorer 实测后填入;post_clicks 标待核实。
+- §7/§8 IG 新号与连坐:新 IG 由老板手动运营 2 周再接 API;Phase 1 先 DNG 一条线 FB+IG 跑一周再扩 4 条;写明同一 Portfolio/同一 token 的连坐风险,Business Verification 提前;boss_actions 对应新增。
+- §2 平台矩阵:YouTube 改为「配额已不是瓶颈(2025-12-04 videos.insert ≈100 单位,2026-06-01 起上传单独计桶 100/天)」,结论暂缓不变;TikTok 加 Direct Post ≈15 帖/日/创作者、审核 2–6 周;Threads 加 link_attachment 预览仅纯文本贴;FB 加 Reels /video_reels 两阶段、系统用户 token 失效条件、App Mode Live 与 Standard Access 免审;X 加具体定价;IG 补 PPA 说明与 carousel 50。
+- §4 素材/IG 发布:AI 图生成指定 output_format=jpeg,入库前用 n8n Edit Image 转 JPEG、4:5 裁切、≤8MB;SE-01 一律以 content_publishing_limit 实值为准;SE-03 Phase 1 只发图,Reels 规格标待核实放 Phase 2。
+- §3.1/§8 PDPA:lead_attribution 不长期保留客户首句明文,只留 matched_code 与 lang_tag,临时摘录由 SE-08 30 天后清空;v_funnel_weekly 不依赖摘录;CPETTR 2024 补马来文版本要求,CC-B 提供的简介/PDPA 文本给中文 + BM 两版(非法律意见)。
+- §3.3/§9 Meta App:新增 App Mode = Live 确认步骤;写明自家资产 Standard Access 无需 App Review;Threads 可长期停留开发模式 + Tester(上限 25)。
+- §3.1/§9 Vault 盐:盐生成后老板另存到密码管理器(离线),文档写明不是备份的一部分(pg_dump 不可解密);请老板确认 Supabase 每日备份覆盖整库。
+- §5 go 跳转:Worker 回调 SE-07 加共享密钥 header X-Go-Secret;DNS 不在 Cloudflare 时优先只把 go 子域 CNAME 到 Cloudflare,再退回 n8n webhook Redirect。
+- §8 Act 500:公司书面许可改为 Phase 1 硬阻塞而非「资料」;TikTok 补充剂广告改为 18+ 确认、预审为 Ads Manager 通用要求需与销售代表确认;PDPA/CPETTR/OSA 补生效日期;IG 5 号/设备、TikTok 放宽至 6 号(推荐 3)。
+- §10/monthly_cost:AI 图改为 RM 1–5(按 $0.005–0.036/张),合计改为 RM 8–20/月;KKLIU 改为官方 RM100/份 + 代办费;注明 n8n 升级不加钱、Worker 免费层 100k 请求/天。
+- 新增 §11 核实记录:逐项列出已核实(附来源)、v1.0 已推翻并改正、待核实(post_clicks、UI 导入是否换 ID、老板实例 n8n 版本、R22.8 解析、开发模式可见性、Reels 规格、备份范围、Do not save 是否生效),并在 §8 注明施工前用老板账号在官方后台再验一次。
+- boss_actions:新增交钥匙/.env、n8n 版本升级、App Mode Live、IG 预热两周、Header Auth 存 token(替代 Facebook Graph API 凭证)、Vault 盐离线备份、dummy 导入实测、恢复按钮处理、Graph API Explorer 指标实测、n8n 自持 API key 拍板、CPETTR 双语文本;Publish 动作补 Workflow history 回滚;验收动作补测试号与黑名单确认。
+- platform_matrix / summary_zh 同步上述改动(Threads 自动交换前提、IG 灰度与预热、YouTube 配额说法、TikTok 15 帖/日、n8n 版本要求、核对已发布版本、Phase 0 时间表)。
+
+## 批评意见(critic findings,按严重度)
+
+- **[high] §3.4 部署核对 / tools/verify-deploy.mjs**:核对脚本会核对「草稿」而不是「已发布版本」,漏点 Publish 无法被发现。n8n 2.x 公共 API `GET /workflows/{id}` 顶层 `nodes/connections` 是最新草稿,已发布快照在只读字段 `activeVersion`(含 versionId/nodes/connections,可为 null)。spec 写的「去掉 id/updatedAt/versionId 后 sha256」对草稿做哈希,老板没点 Publish 也会「字节一致」通过验收。来源:https://raw.githubusercontent.com/n8n-io/n8n/master/packages/cli/src/public-api/v1/handlers/workflows/spec/schemas/workflow.yml 与 …/schemas/activeVersion.yml
+  - 建议:verify-deploy 改为:(1) `activeVersion` 非 null 且 `active==true`;(2) 对 `activeVersion.nodes/connections` 归一化后哈希与 versions/ 比对;(3) 再比对顶层草稿 == activeVersion(证明发布的就是最新导入);(4) DEPLOY-LOG 记 `activeVersion.versionId`。SE-08 日报加一行「SE-* 工作流 已发布 N/M」。
+- **[high] §3.4 部署/回滚 SOP**:「UI 导入 → Publish;回滚 = 导入旧版再 Publish」未验证。n8n 官方文档:UI 导入总是创建新工作流(新 ID),只有 CLI 会覆盖同 ID;另有「导入后已更新的工作流会变为未发布」的说法。新 ID 意味着 Error Workflow 设置、凭证引用、DEPLOY-LOG 的 ID、SE-08 心跳依据的 workflow id 全部漂移,旧工作流仍在跑会双发;若导入即取消发布,则老板不及时 Publish 就有空档。来源:https://docs.n8n.io/build/manage-workflows/export-and-import 、https://docs.n8n.io/build/understand-workflows/save-and-publish-workflows
+  - 建议:Phase 0 先用一个 dummy 工作流实测两种导入路径(工作流列表导入 vs 打开现有画布 ⋯→Import from File)对 ID/发布状态的影响,把结论写进 SOP;回滚优先用 n8n 自带 Workflow history → Restore version → Publish(社区版保留 24 小时),versions/ 文件作为超过 24 小时的回滚来源;DEPLOY-LOG 以 workflow id 为主键防止悄悄换 ID。
+- **[high] §3.3 Threads 凭证 / §2 平台矩阵 Threads 行**:Threads 方案有两处站不住:(1) n8n 通用 OAuth2 凭证与 Threads 换到的是 1 小时短期 token,响应里没有 refresh_token,60 天长期 token 必须再用 app secret 调 `th_exchange_token` 二次交换,n8n OAuth2 凭证不会做——照 spec 做每小时失效,不是 60 天;App Dashboard 的 User Token Generator 也只出短期 token。(2)「n8n 公共 API 没有更新凭证端点、无法自动写回」已过时:`PATCH /credentials/{id}`(支持 isPartialData)已在 2.x(2026-01)加入。来源:https://blog.nevinpjohn.in/posts/threads-api-public-authentication/ 、https://note.com/youpapalife/n/ne22b0e34ad1a 、https://raw.githubusercontent.com/n8n-io/n8n/master/packages/cli/src/public-api/v1/handlers/credentials/spec/paths/credentials.id.yml 、https://github.com/n8n-io/n8n/commit/750e9a84705f737f470b0cfbef70b7b600073adb
+  - 建议:Threads 改用「Header Auth(Authorization: Bearer)」凭证存长期 token;新增 SE-00 Threads Auth 工作流:webhook 收 OAuth code → 短期 → `th_exchange_token` 长期 → 经 n8n API `PATCH /credentials/{id}` 写回凭证,全程在 n8n 内完成、人不看 token;SE-06 第 50 天调 `refresh_access_token?grant_type=th_refresh_token` 再 PATCH。前提:该两条工作流「不保存任何执行数据」,并让老板决定是否允许 n8n 持有自己的 API key(此项与铁律「REST 只准 GET」冲突,需老板拍板);若不允许,则保留人工重新授权但仍走 SE-00,不用 OAuth2 凭证。
+- **[high] §3.3 凭证与执行数据**:spec 说「禁止 access_token 走 query」,但 n8n 自带的「Facebook Graph API」凭证正是把 token 注入 query string(源码 `authenticate.properties.qs.access_token`),URL 会出现在错误输出、代理/反代日志里;而 n8n 的「执行数据脱敏」是企业版功能,社区版没有;历史上还有「Save execution 设置被忽略」bug(#12118)与凭证泄漏 advisory(修复于 2.27.4/2.28.1)。来源:https://raw.githubusercontent.com/n8n-io/n8n/master/packages/nodes-base/credentials/FacebookGraphApi.credentials.ts 、https://docs.n8n.io/deploy/host-n8n/configure-n8n/security/redact-execution-data 、https://github.com/n8n-io/n8n/issues/12118 、https://github.com/n8n-io/n8n/security/advisories/GHSA-q3j5-8vrg-4p9q
+  - 建议:Meta/Threads 一律用 HTTP Request + Header Auth 凭证 `Authorization: Bearer <token>`(Graph API 与 Threads 都支持),不用 FacebookGraphApi 凭证;错误分支只提取 error.code/message 再落库;kickoff 加一条:先 `GET /rest/settings` 或 UI 看 n8n 版本,低于 2.28.1 先请老板升级;发布/探针工作流「成功与失败执行都不保存」,并在验收里实际打开一次执行记录确认没有 token。
+- **[high] kickoff 铁律 / n8n API key**:「n8n REST 只准 GET」无法技术上落实:非企业版 API key 全权限、无作用域,CC-B 拿到的 key 可以删凭证、写工作流。这是纪律不是控制。来源:https://docs.n8n.io/connect/n8n-api/authentication 、https://community.n8n.io/t/api-scopes-read-write/17795
+  - 建议:kickoff 明确:API key 只放本地 .env(已 gitignore),不写进任何 n8n 工作流/Supabase/文档;所有 REST 调用集中在 tools/ 下一个只实现 GET 的封装,禁止在别处直接 curl;DEPLOY-LOG 记每次 REST 调用类型;老板知道在 n8n Settings → API 一键撤销。
+- **[high] §5 成交按钮 / §6 日报 / §3.2 Telegram 分流**:日报走 Monitor v2 现有 bot,但日报里的「成交」按钮需要 Telegram Trigger 接 callback,而现有 bot 的唯一 webhook 已被主线占用——按钮点了没人接。同理 SE-01b(发/不发)、SE-07(成交)、SE-09(已发/跳过)、收图入库都各自要一个 Telegram Trigger,但一个 bot 只能有一个激活的 Trigger 工作流。来源:https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.telegramtrigger/common-issues 、https://community.n8n.io/t/telegram-trigger-only-the-last-activated-workflow-runs/94736
+  - 建议:新增 SE-00 Social Bot Router:唯一的 Telegram Trigger(social bot),按 callback_data 前缀/图片消息分发到 SE-01b/SE-07/SE-09/素材入库(Execute Workflow);带按钮的消息(日报、审批、内容包)全部由 social bot 发送,Monitor v2 bot 只发纯文本告警。
+- **[high] Phase 0 任务 c(v3.10 来源码升级)与主线 R22.8**:帖尾来源码改成 `#FB_DNG_0911A` 后,主线 R22.8 现有的来源码解析(按 `#FB_DNG`)可能因精确匹配/词边界而失效,既打断现有归因,也让 Phase 0 验收(依赖主线落库的首句)失败;spec 只说 SE-07 向后兼容,没说主线怎么办。本地无 wabot 文件,无法核对 R22.8 的正则。
+  - 建议:任务 b 之前加任务 0:CC-B 用只读 GET 拉 R22.8 JSON,找出来源码解析节点并写明它对 `#FB_DNG_0911A` 的行为;若不兼容,要么由 CC-A 改主线正则(需老板批准),要么新码采用主线能容忍的形式(例如 `#FB_DNG 0911A` 两段)。验收前用一条测试消息在主线验证。
+- **[high] SE-06 Token Sentinel 自动停号**:「探针失败 = P1 + is_active=false」没有防抖也没有恢复路径:Meta 偶发 code 1/2/4/17(临时/限流)会让全部账号一夜停发,而老板没有任何 UI 能把 Supabase 里的 is_active 改回来。
+  - 建议:只有 190/200/10(凭证/权限)才停号;1/2/4/17/613 只告警并 30 分钟后重探;连续 2 次失败才停;停号消息附「恢复」按钮(走 social bot),下一次探针成功也自动恢复并告警「已恢复」。错误码含义来源:https://github.com/phwd/fbec
+- **[medium] §7 Phase 0「本周」 / kickoff 验收**:今天 2026-09-09(周三)。验收要「日报连发 3 天」「收到 1 条真实 #FB_* 线索」(需 v3.10 先在一三五发出新帖)、老板 Publish ≥4 个工作流、看 SQL、给 .env、找主线表,还有「cron 真跑制造失败进 Monitor v2」——spec 把它放 Phase 1,kickoff 放 Phase 0,两份自相矛盾。另「真实线索」与「老板自己点链接」矛盾:老板号可能在主线黑名单/内部号单或被当测试。
+  - 建议:Phase 0 改为 7–10 个工作日并拆成 0a(建表+SE-07+v3.10)/0b(SE-06+SE-08+核对工具);两份文档统一验收清单;验收改为「任一条经 wa.me 预填首句进线(允许老板测试号,需先确认主线不会把该号当黑名单)」。
+- **[medium] kickoff 上下文与自相矛盾**:(1) 写「环境变量与凭证文件里有 n8n REST 与 Supabase service key」——目录是全新的,什么都没有,凭证必须老板提供;(2) SPEC-social-engine.md 需要先放进目录,v3.9.19 JSON 本地没有只能 GET;(3) 铁律 4 禁改 FB Engine,但任务 c 就是改它;(4) 缺 brand_accounts/platform_credentials 种子数据(Phase 0 SE-06 探什么凭证?现有 4 个 Page token 的凭证名);(5) 缺 Telegram chat_id、Monitor v2/R22.8/FB Engine 的工作流 ID、Supabase 项目、时区、老板用中文沟通、无 staging 全在生产;(6) 全局 EXECUTIONS_DATA_MAX_AGE=72 要改 DO 上的 env 并重启 n8n,会短暂停主线,却没列入「先问老板」。四条铁律本身没有违反。
+  - 建议:kickoff 第一步改为:「向老板索要 .env(N8N_BASE_URL、N8N_API_KEY、SUPABASE_URL、SUPABASE_SERVICE_KEY、TG chat id),写 .gitignore 后再 git init;确认 SPEC 已在目录;用 GET /workflows 列出并记录 R22.8/FB Engine/Monitor v2 的 ID 与凭证名」;注明「任务 c 老板已原则同意,导入前仍把节点 diff 给老板过目」;把 env/重启类改动列入铁律 4;附 4 条线代码、时区 Asia/Kuala_Lumpur、n8n 版本要求。
+- **[medium] §3.1 Supabase `social` schema**:若 n8n 用 Supabase 节点(PostgREST),自定义 schema 必须在 Dashboard → Settings → API → Exposed schemas 加入并 GRANT USAGE/权限给 service_role,否则 PGRST106;spec 与 kickoff 都没写。同时「只读主线的表」也没有技术保障(service key 绕过 RLS)。来源:https://supabase.com/docs/guides/api/using-custom-schemas 、https://supabase.com/docs/guides/troubleshooting/pgrst106-the-schema-must-be-one-of-the-following-error-when-querying-an-exposed-schema
+  - 建议:n8n 改用 Postgres 节点直连,并在 001_social_schema.sql 里建专用角色 `social_engine`(social schema 全权、主线相关表仅 SELECT、无 vault 直读),n8n 的 SE-* 凭证只用这个角色;service key 只留给 CC-B 本地一次性建表。
+- **[medium] §8 合规 / Gate v2 规则**:KKLIU 数字有误:官方申请费 RM100(咨询公司报价 RM50–500 视媒体类型),5 个工作日只适用非网站广告,网站/社媒类按 30 天,批文有效 3 年;「食品类 SKU 无 MAL 不拦」过宽——Food Regulations 1985 reg.18 同样禁止预防/治疗/治愈宣称,Act 290 第 3 条对任何「物品」生效。来源:https://bioprestige.my/medicine-advertisements-board-mab-regulating-medical-advertising-malaysia/ 、https://prioocare.com/kkliu-rules-regulations-in-malaysia-pharmacy/ 、https://www.foodipedia.my/forbidden-claims-on-product-labels-in-malaysia/ 、https://pharmacy.moh.gov.my/sites/default/files/document-upload/medicine-advertisement-sale-act-1956-act-290_1.pdf
+  - 建议:Gate 的疾病词/功效词对所有 SKU 一律 block,与是否有 MAL 无关;MAL/KKLIU 只决定「能否提功效」不决定「能否提疾病」;§10 成本改为 KKLIU 约 RM100/份(官方)+ 可能的代办费;§8 时间改为 5 工作日(非网站)/30 天(网站类)。
+- **[medium] §3.1 metrics_daily / §8 指标漂移 / metric_map 初始值**:表里仍用 `reach` 作核心字段,但 Meta 2025-11-15 已弃 impressions/page_fans 等,2026-06-15 又弃 reach、video_views(非 Reels)、profile_views、website_clicks 等,替代为 views / post_media_view / Page Viewer;spec 未给出 2026-09 仍有效的初始指标清单,SE-05 上线第一天就会满屏 invalid metric。来源:https://docs.supermetrics.com/docs/facebook-insights-field-changes-november-13-2025-1 、https://windsor.ai/documentation/guide-for-deprecating-metrics-for-facebook-organic-connector-june-15-2026/
+  - 建议:字段改为 `views/viewers/reactions/comments/shares/saves`,`reach` 标 deprecated 只存 raw;Phase 1 第一项任务是用老板账号在 Graph API Explorer 对 4 个 Page + 4 个 IG 逐个跑一次可用指标,把结果写进 metric_map 作为初始版本。
+- **[medium] §8 封号风险 / IG 新号**:4 个 IG(及日后 Threads)是新号,一开就全走 API 发帖;Instagram 对新号前 2–4 周容忍度低,且 4 个 Page + 4 个 IG 挂在同一个 Business Portfolio、同一个系统用户 token 下,一个账号被限制可能连带商业账户受限,单点变全停。spec 说「不养号」但也没有预热步骤。来源:https://www.interakt.shop/instagram-automation/avoiding-spam-flags/
+  - 建议:每个新 IG 先由老板手动运营 2 周(完善简介、绑定手机、手发 3–5 帖、正常互动)再切 API;Phase 1 先只上 1 条线跑一周,再扩到 4 条;Business Verification 尽早完成(spec 已列)以降低风控误判。
+- **[low] §2 平台矩阵 YouTube / TikTok 行**:YouTube 行「2026-05 起隐藏上传配额约 7/天」与公开信息不符:2025-12-04 videos.insert 成本降到≈100 单位,2026-06-01 起上传单独计桶 100 次/天(反而更宽松);「未审计项目上传锁私密」正确。TikTok 行漏了 Direct Post 每创作者约 15 帖/日上限。来源:https://www.blotato.com/blog/youtube-api-pricing 、https://vorplabs.com/agent-tools/tiktok-content-posting-api
+  - 建议:YouTube 改写为「未审计项目上传锁私密,需合规审计;配额已不是瓶颈」;结论(暂缓)不变。TikTok 加上 15 帖/日/创作者。
+- **[low] §3.2 n8n 工作流 / IG 发布**:IG 只收 JPEG,但 gpt-image-1-mini 默认输出 PNG;spec 只在 Gate 里「校验 JPEG」,没有转换步骤,AI 图会在 Gate 被整批拦下。来源:https://bundle.social/blog/instagram-api-rate-limits(JPEG only 引自官方)
+  - 建议:生成时指定 `output_format: jpeg`,入库前统一转 JPEG 并检查 4:5–1.91:1、≤8MB;IG 文档内部对上限有 100 与 50(carousel 段落)两种说法,SE-01 一律以 `content_publishing_limit` 实值为准。
+- **[low] §5 归因 / PDPA**:`first_msg_excerpt`(客户首句 ≤80 字)常含健康状况(「我糖尿病…」),属 PDPA 敏感个人资料;spec 只把手机号哈希,摘录明文长期保存。
+  - 建议:摘录只保留匹配到的来源码与语言标记,或 30 天后自动清空;`v_funnel_weekly` 不依赖摘录。
+- **[low] §9 老板动作 11 / CPETTR 2024**:CPETTR 2024 除经营者信息披露外还要求线上销售信息须有马来文版本;spec 只说「补经营者信息」。来源:https://www.lexology.com/library/detail.aspx?g=a8ed5c4d-e4e6-4d44-b82c-0302682ee8af 、https://food.chemlinked.com/news/food-news/malaysia-promulgates-consumer-protection-electronic-trade-transaction-regulations-2024
+  - 建议:CC-B 提供的简介/PDPA 文本同时给 BM 版本(非法律意见,建议老板与公司合规确认)。
+- **[low] §3.3 Meta App 模式**:spec 没说明 App 需处于 Live 模式:开发模式下 App 发布的内容只对有角色的人可见;IG 自家账号用 Standard Access 无需 App Review 这点也没写明,老板会不知道要不要提交审核。来源:https://wiringbits.net/wiringbits/2020/08/11/using-the-facebook-api-to-post-on-your-own-pages.html/ 、https://singhamandeep.com/what-is-meta-advanced-access/
+  - 建议:老板动作 3 前加一步:developers.facebook.com → 该 App → 顶部 App Mode 确认为 Live(现有 FB 引擎已发真实帖,大概率已是);注明「只发自家资产,Standard Access 够用,不用提交 App Review」;Threads 可长期停留开发模式 + Tester(上限 25)。
+- **[low] §3.1 Vault 盐**:Vault 根密钥由 Supabase 托管,同项目恢复/PITR 可解密,但 pg_dump 类导出、换项目手工恢复解不开;盐丢了 wa_hash 不可复现,lead 去重全部失效。来源:https://supabase.com/docs/guides/database/vault 、https://github.com/supabase/vault
+  - 建议:盐生成后由老板另存一份到密码管理器(离线),文档写明「不是备份的一部分」。
+
+## 缺失主题
+
+- SE-00 Social Bot Router:一个 social bot 只能有一个 Telegram Trigger 工作流,审批/成交/已发/收图必须集中路由,日报需由 social bot 发送
+- SE-00 Threads Auth:code→短期→长期 token 交换与写回(Header Auth 凭证 + n8n PATCH /credentials)的具体流程,以及是否允许 n8n 持有自己的 API key 需老板拍板
+- 部署核对必须核对 `activeVersion`(已发布快照)而非草稿,并检查 `active==true`;日报列出 SE-* 已发布状态,作为「漏 Publish」兜底
+- UI 导入是否新建 workflow ID / 是否取消发布——需在 dummy 工作流上实测并写入 SOP;回滚补充 Workflow history Restore(社区版 24 小时)
+- n8n 版本要求与升级计划(Publish 需 2.0+,PATCH 凭证需 2026-01 之后的 2.x,凭证泄漏修复需 ≥2.28.1);全局 env 改动需重启 n8n 影响主线,应列为「先问老板」
+- 凭证注入方式:改用 Header Auth Bearer,禁用 FacebookGraphApi 凭证(query string);社区版无执行数据脱敏,需人工验一次执行记录
+- Supabase:`social` schema 的 PostgREST 暴露/GRANT,或改 Postgres 节点 + 专用只读角色 `social_engine`,以技术手段落实「只读主线表」
+- R22.8 来源码解析对新格式 `#FB_<LINE>_<MMDDx>` 的兼容性检查(任务 0),以及主线是否会把老板号当黑名单/内部号
+- brand_accounts / platform_credentials 种子数据:Phase 0 SE-06 要探哪些凭证(现有 4 个 Page token 的 n8n 凭证名与 expires_at=null)
+- .env 清单、.gitignore、API key 撤销流程、Telegram chat_id、Monitor v2/R22.8/FB Engine 的 workflow ID 与凭证名
+- metric_map 2026-09 有效指标初始清单(views/post_media_view/Page Viewer),`reach` 已死
+- SE-06 停号防抖(错误码分级)与恢复路径(按钮/自动恢复)
+- IG 新号预热与灰度(先 1 条线 1 周再扩 4 条);Business Portfolio 连坐风险
+- AI 图输出 JPEG(output_format)、尺寸/比例预处理;视频/Reels 规格与 SE-03 是否支持 Reels(spec 有 media_kind 但只写了图)
+- first_msg_excerpt 属敏感个人资料的留存策略;CPETTR 2024 的马来文披露要求
+- Phase 0 时间表现实化(7–10 工作日)与两份文档验收清单统一(cron 制造失败属 Phase 0 还是 Phase 1)
+- App Mode=Live 与 Standard Access 无需 App Review 的说明;Threads 长期停留开发模式 + Tester(上限 25)
+- Vault 盐离线备份;Supabase 每日备份是否覆盖 social schema 的确认
+- Cloudflare Worker 回调 SE-07 的鉴权(共享密钥 header)与 daelifeai.com DNS 不在 Cloudflare 时的退路细节
+- Direct Sales Act 500:分销商任何广告材料须公司事先批准是行业合同常规,公司书面许可应写成 Phase 1 的硬阻塞而非「资料」
+
+## 待核实 / 已核实的说法
+
+- Instagram 100 帖/24h(滚动窗口)、`content_publishing_limit` 端点、图片仅 JPEG、≤8MB、比例 4:5–1.91:1 → 确认(二手引用官方文档;官方站 developers.facebook.com 被代理拦截)。注意同一官方页 carousel 段落写 50,以端点实值为准(来源:https://bundle.social/blog/instagram-api-rate-limits)
+- IG 发布前置:关联 Page 若要求 Page Publishing Authorization 则无法发布 → 确认(引官方限制原句);PPA 主要针对美国受众大的 Page,马来西亚小 Page 通常不触发,但 Meta 建议预先完成(来源:https://community.make.com/t/instagram-business-accounts-connected-to-a-page-that-requires-page-publishing-authorization-ppa-cannot-be-published-to-until-ppa-has-been-completed/74991)
+- Threads 长期 token 60 天,24 小时后可用 `th_refresh_token` 刷新,过期后不可再刷新 → 确认(二手)(来源:https://picklog.cc/blog/threads-api-token-refresh)
+- n8n OAuth2 凭证接 Threads 可直接拿到 60 天 token → 不成立:OAuth 交换得到的是 1 小时短期 token,长期 token 需用 app secret 调 `th_exchange_token` 二次交换;App Dashboard 的 User Token Generator 也只给短期 token(https://note.com/youpapalife/n/ne22b0e34ad1a)(来源:https://blog.nevinpjohn.in/posts/threads-api-public-authentication/)
+- n8n 公共 API 没有更新凭证的端点,无法写回新 token → 已过时:`PATCH /credentials/{id}`(scope credential:update,支持 isPartialData)已加入 2.x(commit 750e9a8,#23431;二手来源称 2026-01-13 发布 https://www.withone.ai/knowledge/n8n/conn_mod_def::GJ5AzDEe_GQ::rTE-iUC3QaS3a78bTHqE2w)。老板实例版本待核实(来源:https://raw.githubusercontent.com/n8n-io/n8n/master/packages/cli/src/public-api/v1/handlers/credentials/spec/paths/credentials.id.yml)
+- Threads 250 帖/24h、`threads_publishing_limit`、`link_attachment` 可点 → 确认(二手);补充:link_attachment 预览只在纯文本贴显示,带图则不显示预览(https://www.threads.com/@anujs3/post/C_1DGIFzqwb)(来源:https://postproxy.dev/blog/how-to-post-to-threads-via-api/)
+- TikTok 未审核 App 只能 SELF_ONLY 私密、≤5 用户/24h、账号须私密 → 确认(二手引官方 Content Sharing Guidelines;developers.tiktok.com 被拦);另有 Direct Post 每创作者约 15 帖/日上限(来源:https://vorplabs.com/agent-tools/tiktok-content-posting-api)
+- TikTok 审核数天到 6 周 → 部分确认:二手来源为 2–4 周或 2–6 周,多轮反馈(来源:https://bundle.social/blog/tiktok-api-approval)
+- Meta 系统用户 token 永不过期 → 确认(二手;官方页被拦):无时间过期,但会因安全审查、资产变更、移除系统用户/权限、App 受限而失效(来源:https://singhamandeep.com/meta-system-user-access-tokens/)
+- 现有 FB Page token「永不过期」 → 确认但有条件:底层用户改密码、被移出 Page、撤销授权即失效(来源:https://bundle.social/blog/facebook-page-access-token)
+- Graph API v26 为当前版本 → 确认:v26.0 于 2026-07-29 发布(官方 changelog 被拦)(来源:https://unalsoft.com/blog/2026-07-31-meta-graph-api-v26/en/)
+- FB Groups API 已于 2024-04 移除 → 确认(2024-04-22)(来源:https://www.ayrshare.com/facebook-removes-groups-api-access-impact-and-implications/)
+- Meta 2025-11-15 弃 impressions,2026-06-15 再弃一批 → 确认:11-15 弃 impressions/page_fans 等改用 views;2026-06-15 弃 reach、video_views(非 Reels)、profile_views、website_clicks 等,引入 Page Viewer(https://docs.supermetrics.com/docs/facebook-insights-field-changes-november-13-2025-1)(来源:https://windsor.ai/documentation/guide-for-deprecating-metrics-for-facebook-organic-connector-june-15-2026/)
+- `post_clicks` 系列已移除 → 待核实:未找到明确列出 post_clicks 的官方/二手清单(ppc.land、Sprout 页面被拦)
+- Meta 2025-01 起健康类数据源禁下漏斗事件优化 → 确认(来源:https://www.jonloomer.com/qvt/health-and-wellness-restrictions/)
+- Meta 对 AI 图自动打「AI info」,写实 AI 视频/音频须自我披露 → 确认(来源:https://about.fb.com/news/2024/02/labeling-ai-generated-images-on-facebook-instagram-and-threads/)
+- YouTube 2026-05 起隐藏上传配额约 7/天 → 不成立/过时:2025-12-04 videos.insert 成本降至≈100 单位,2026-06-01 起上传单独计桶 100 次/天;「未审计项目上传锁私密」确认(官方 revision_history 被拦)(来源:https://www.blotato.com/blog/youtube-api-pricing)
+- X 带链接约 $0.20/帖 → 确认:2026-04 起含链接帖 $0.20,普通帖 $0.015(官方 https://docs.x.com/x-api/getting-started/pricing)(来源:https://postproxy.dev/blog/x-api-pricing-2026/)
+- n8n Error Trigger 对手动测试不生效 → 确认(来源:https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.errortrigger)
+- n8n Code 节点在 task runner 里读不到环境变量 → 确认:2.0 起 N8N_BLOCK_ENV_ACCESS_IN_NODE 默认 true(来源:https://docs.n8n.io/deploy/host-n8n/configure-n8n/basic-configuration/use-environment-variables/task-runners)
+- EXECUTIONS_DATA_PRUNE / EXECUTIONS_DATA_MAX_AGE 与「成功执行不保存」 → 确认(默认 336h);但曾有「Do not save 设置被忽略」bug(https://github.com/n8n-io/n8n/issues/12118),需在老板版本上实测(来源:https://docs.n8n.io/deploy/host-n8n/configure-n8n/scaling/manage-execution-data)
+- n8n 自带 Facebook Graph API 凭证把 token 放进 query string → 确认(源码 `qs.access_token`)(来源:https://raw.githubusercontent.com/n8n-io/n8n/master/packages/nodes-base/credentials/FacebookGraphApi.credentials.ts)
+- n8n 执行数据脱敏可用 → 仅企业版(自托管 Enterprise),社区版不可用(来源:https://docs.n8n.io/deploy/host-n8n/configure-n8n/security/redact-execution-data)
+- n8n API key 可限制只读 → 不成立:非企业版 API key 全权限、无作用域(来源:https://docs.n8n.io/connect/n8n-api/authentication)
+- n8n 2.x GET /workflows/{id} 返回什么 → 确认:顶层 nodes 为草稿,`activeVersion`(只读,可 null)为已发布快照,`active` 只读(来源:https://raw.githubusercontent.com/n8n-io/n8n/master/packages/cli/src/public-api/v1/handlers/workflows/spec/schemas/activeVersion.yml)
+- UI 导入会替换当前工作流并保留 ID → 待核实:官方文档称 UI 导入总是新建工作流(新 ID),CLI 才覆盖同 ID;画布内 Import from File 的实际行为需实测(来源:https://docs.n8n.io/build/manage-workflows/export-and-import)
+- 一个 Telegram bot 只能有一个 webhook;n8n 一个 bot 只能一个 Trigger 工作流 → 确认(来源:https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.telegramtrigger/common-issues)
+- n8n 新版 UI 用 Publish 取代 Active 开关 → 确认(2.0 起)(来源:https://support.n8n.io/article/understanding-workflow-publishing-in-n-8-n-2-0)
+- Act 290 附表 20 种疾病含眼疾、性功能障碍 → 确认:附表含肾病、心脏病、糖尿病、癫痫、瘫痪、肺结核、哮喘、麻风、癌症、耳聋、药物成瘾、疝气、眼疾、高血压、精神病、不孕、性冷淡、性功能障碍/阳痿、性病、神经衰弱(来源:https://pharmacy.moh.gov.my/sites/default/files/document-upload/medicine-advertisement-sale-act-1956-act-290_1.pdf)
+- KKLIU 约 RM300、5 个工作日、有效 3 年 → 部分错误:官方申请费 RM100(咨询报价 RM50–500);5 工作日仅非网站广告,网站类 30 天;有效期 3 年确认(https://prioocare.com/kkliu-rules-regulations-in-malaysia-pharmacy/)(来源:https://bioprestige.my/medicine-advertisements-board-mab-regulating-medical-advertising-malaysia/)
+- 食品类 SKU 无 MAL 不拦疾病词 → 不成立:Food Regulations 1985 reg.18 同样禁止预防/治疗/治愈宣称(来源:https://www.foodipedia.my/forbidden-claims-on-product-labels-in-malaysia/)
+- Act 500:分销商宣传须符合公司获批营销计划 → 确认(直销公司合规条款范例:任何广告材料须公司事先批准)(来源:https://enagic-my.com/compliance/relevant-regulations-under-the-law-of-malaysia/)
+- PDPA 2024 修正、CPETTR 2024、OSA 2025 → 确认:PDPA 修正 2025 年 1/4/6 月分三阶段生效;CPETTR 2024 自 2024-12-25 生效并要求马来文披露(https://www.lexology.com/library/detail.aspx?g=a8ed5c4d-e4e6-4d44-b82c-0302682ee8af);OSA 2025 于 2026-01-01 生效(https://www.roedl.com/en/insights/malaysia-online-safety-act-2025/)(来源:https://www.dfdl.com/insights/legal-and-tax-updates/malaysia-implementation-of-the-personal-data-protection-amendment-act-2024/)
+- IG 同设备 ≤5 号、TikTok ≤3 号 → IG 5 号确认;TikTok 二手来源称 2026 年登录上限已放宽到 6(推荐 3),原说法过时但不影响策略(https://360uniquizer.com/en/news/tiktok-accounts-one-device-2026)(来源:https://www.socialscalehub.com/academy/how-many-instagram-accounts-can-you-have)
+- TikTok 补充剂广告需预审 + 18+ → 部分确认:18+ 确认;预审流程为 Ads Manager 通用要求,马来西亚需与 TikTok 销售代表确认资格(来源:https://ads.tiktok.com/help/article/age-targeting-restrictions?lang=en)
+- gpt-image-1-mini 每月 30 张 ≈ RM 2–8 → 确认:$0.005–0.036/张,30 张约 $0.15–1.1,估算偏保守但方向正确;注意默认 PNG 需指定 jpeg(来源:https://www.eesel.ai/blog/gpt-image-1-mini-pricing)
+- Supabase 免费层 1GB 存储,Pro US$25 → 确认(来源:https://uibakery.io/blog/supabase-pricing)
+- Cloudflare Worker 免费层足够 → 确认:100k 请求/天、10ms CPU(来源:https://www.srvrlss.io/provider/cloudflare/)
+- Meta 错误码 1/2 临时可重试,190/200/10 权限类不重试 → 确认;补充 4/17/613 为限流可退避重试,368 为滥用判定不可重试(来源:https://github.com/phwd/fbec)
+- 自家 IG 账号发布只需 Standard Access,不用 App Review → 确认(二手)(来源:https://singhamandeep.com/what-is-meta-advanced-access/)
+- 开发模式 App 发的内容仅角色用户可见 → 部分确认(2020 年二手来源);需在老板 App 上确认 App Mode=Live(来源:https://wiringbits.net/wiringbits/2020/08/11/using-the-facebook-api-to-post-on-your-own-pages.html/)
+- FB Reels 走 `/video_reels` 分阶段上传 → 确认(start/finish 两阶段,仅 Page)(来源:https://www.ayrshare.com/blog/facebook-reels-api-how-to-post-fb-reels-using-a-social-media-api/)
+- Supabase 自定义 schema 需加入 Exposed schemas 并 GRANT → 确认(仅当经 PostgREST/Supabase 节点访问;Postgres 直连不需要)(来源:https://supabase.com/docs/guides/api/using-custom-schemas)
+- Vault 盐不进备份也能恢复 → 部分确认:根密钥由 Supabase 托管,同项目恢复/PITR/换新项目会带密钥;自行 pg_dump 导出不可解密,需离线备份盐(来源:https://github.com/supabase/vault)
+- wa.me 预填文字含 `#` 需 encodeURIComponent → 确认(# → %23)(来源:https://help.businesschat.io/en/articles/6517838-how-to-build-a-whatsapp-click-to-chat-url-wa-me)
+- R22.8 能兼容新来源码格式 `#FB_DNG_0911A` → 待核实:本环境无 wabot 本地文件,需 CC-A/CC-B 只读拉取 R22.8 JSON 核对解析节点
