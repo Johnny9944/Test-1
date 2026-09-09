@@ -65,3 +65,13 @@
 - 5 个 skill 的调研与安装命令核实 → `docs/SKILLS-EVAL.md` + `docs/install-skills.ps1`
 - 多平台发帖 + 监控系统方案(三角度设计 → 两评委 → 合成 → 批评 → 修订)→ `docs/SPEC-social-engine.md` + `docs/kickoff/CC-B-social-engine.md`
 - Remote Control 多会话机制核实 → 本文件第 2、5 节
+
+## 7. 进度快照(2026-09-09 21:17 UTC / 马来西亚 05:17)
+
+| 会话 | 状态 | 已完成 | 等你 |
+|---|---|---|---|
+| CC-A wabot-ops | idle | 4 帖已发并验证;harness 68/68 + 7 新;R22.9 备好(75/0,主 Brain 未动);备份已验证 | ① 部署时间窗 ② errorWorkflow 设置 ③ Brain 改动 S-7/S-3/B-2/S-8 批准 ④ Supabase 备份 |
+| CC-B social-engine | idle | SPEC 三段拼齐存档;Phase 0 离线部分 34 项交付已 commit;`需要老板.md` 已写到项目根目录(commit 759d46d,5 项决策 + 21 条阻塞) | 打开 `需要老板.md` 逐条回;.env keys;n8n ≥ 2.28.1;Business Portfolio + App Live;IG 新号两周养号;系统用户 token 走 Header Auth;新社交 bot;合规文件;Vault salt 离线备份 |
+| CC-C tg-intel | idle | 四线词典(313–388 词)、200 条合成 fixture、导入监听脚本;自测 336/0;commit 517f518 | Telegram 重新导出(完整版) |
+
+云端巡检节奏:安静模式,有待办 30 分钟、无待办 90 分钟;00:00 UTC(08:00 MYT)写唯一一份晨报。
