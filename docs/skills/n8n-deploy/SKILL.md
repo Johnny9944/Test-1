@@ -23,6 +23,17 @@ description: wabot 生态里任何 n8n 工作流改动与部署的流程。要�
 6. **交给老板。** 回复格式:改了什么 → 三个数 → 哈希 → 「请到 n8n 打开 <工作流名> 核对后点 Publish」→ 回滚方式。
 7. **记录。** 更新 TASK.md / HANDOFF-next-session.md,git commit(不 push)。
 
+## 2.x 公共 API 的坑(2026-09-10 由云端从 n8n 源码核实,老板实例待实测)
+
+- **对已发布(active)的工作流做 PUT 会直接上线。** n8n 2.1.4 的公共 API 在 PUT 时把 `publishIfActive` 写死为 true;要到 2.35.0 才有 `PUT ?publishIfActive=false`。所以「PUT 内容,老板再点 Publish」在 2.1.4 上等于「老板一句文字批准 = 上线」。老板必须明确一次:接受这个语义,还是改成「你放好 JSON,老板自己 Import from File → Publish」。没拍板前,只在老板给的时间窗内 PUT。
+- **PUT 前预检草稿。** 先 GET,要求 `versionId == activeVersionId`;不相等说明编辑器里有未发布草稿,PUT 会把草稿一并发布 → 停下问老板「发布草稿还是丢弃」。
+- **PUT body 只带 4 个顶层键:** `name / nodes / connections / settings`;`settings` 只带你要改的键(如 `errorWorkflow`、`saveDataSuccessExecution`),把编辑器导出的整份 settings 原样回传会因 `timeSavedMode` 等非公共键报 400。不带 `id / active / tags / versionId / pinData / meta`。
+- **记录 PUT 前后的 `activeVersionId`。** 变了就是已上线,写进 TASK.md;这也是验证上面第一条的方法(第一次在 dummy 工作流上做)。
+- **API 帮助脚本加黑名单:** `activate / deactivate / delete / archive / unarchive` 端点一律不许调用(铁律 1、铁律 2)。
+- **看版本号别用 `/rest/settings`**,2.x 未登录不返回版本;用 `docker compose exec n8n n8n --version`。
+- **编辑器里手动 Test workflow 不会触发 Error Workflow**;端到端验收用一个 dummy 工作流(Stop and Error 节点)由老板 Publish 后跑一次,看 Monitor v2 有没有收到。
+- **升级到 ≥ 2.35 后**,第 3 步的 PUT 一律带 `?publishIfActive=false`,先在 dummy 上验证 `activeVersionId` 不变,再改回「老板点 Publish 才生效」的流程。
+
 ## 常见坑
 
 - 老板点 ⊖ 以为是开关,其实是 Archive:发现工作流不见了先看「Show archived」。
