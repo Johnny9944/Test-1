@@ -142,3 +142,21 @@
 - Vault 盐不进备份也能恢复 → 部分确认:根密钥由 Supabase 托管,同项目恢复/PITR/换新项目会带密钥;自行 pg_dump 导出不可解密,需离线备份盐(来源:https://github.com/supabase/vault)
 - wa.me 预填文字含 `#` 需 encodeURIComponent → 确认(# → %23)(来源:https://help.businesschat.io/en/articles/6517838-how-to-build-a-whatsapp-click-to-chat-url-wa-me)
 - R22.8 能兼容新来源码格式 `#FB_DNG_0911A` → 待核实:本环境无 wabot 本地文件,需 CC-A/CC-B 只读拉取 R22.8 JSON 核对解析节点
+
+## SPEC v1.1 勘误与补充(2026-09-10,来自 17 项待办的对抗性核验工作流 wf_f99cb2e0)
+
+以下结论多数经 n8n / tdesktop / Meta SDK 的 GitHub 源码交叉核实(官方文档站从云端被代理拦截),标「待实测」的要在老板实例上验一次。
+
+1. **n8n 公共 API `PUT /workflows/{id}` 对已发布工作流会直接上线**(2.1.4 源码里 `publishIfActive` 写死 true;2.35.0 起才有 `?publishIfActive=false`)。SPEC §6 的 DEPLOY-SOP「PUT 内容 → 老板点 Publish」在 2.1.4 上实际是「老板文字批准 = 上线」。待实测:老板 Publish 一个 dummy 后 PUT 一次,比较 `activeVersionId`。老板需明确接受该语义,或改为「放 JSON → 老板 Import from File → Publish」。
+2. **PUT 前预检** `versionId == activeVersionId`,否则会把编辑器里的未发布草稿一并发布;body 只带 `name/nodes/connections/settings`,`settings` 只带差异键(整份回传会因 `timeSavedMode` 等非公共键 400)。
+3. **升级目标改为最新稳定 2.38.x**,2.28.1 只是下限:Telegram Trigger「Restrict to Chat IDs 吃掉 callback_query」的修复在 2.30.0;`drop_pending_updates` 在 2.20.0;`GET /credentials`、`/credentials/{id}/test` 在 2.28.1;`PATCH /credentials` 在 2.3.0。升级后新增 `POST /workflows/{id}/archive|unarchive`,加进 API 黑名单。
+4. **`/rest/settings` 在 2.x 未登录不返回版本号**;版本以 `docker compose exec n8n n8n --version` 为准。
+5. **凭证方案:.env 不放 Supabase `service_role`**,改专用角色 `social_engine` + `SOCIAL_DB_URL`(pooler 5432);Schema、Vault 盐、`social.wa_hash()`(SECURITY DEFINER)由老板在 SQL Editor 一次跑完,SQL 末尾直接 select 出盐让老板抄进密码管理器(与第 11 项合并)。
+6. **Supabase Free 层没有每日备份**,SPEC §3.1/§11 的备份假设只对 Pro 成立;Free 层要老板批准在 DO 上放 DB 密码跑定时 `pg_dump`,或接受 Windows 任务计划的开机依赖。
+7. **Meta:`page_impressions` 已于 2025-11-15 弃用**,SE-05 指标改用 `page_post_engagements` 等仍在的指标(施工前在 Graph API Explorer 验一次);HTTP Request 节点用 Generic Credential → Header Auth 的措辞;域名验证不需要。若主线 WhatsApp 是 Cloud API 直连,Business Portfolio 与系统用户多半已存在,第 6/8 项缩成「给现有系统用户追加 4 Page + 4 IG 并生成第二枚 token」。
+8. **Telegram 导出:整体导出对公开群/频道拿不到别人的发言**,要逐群「Export chat history」;单群导出才有日期范围。Telethon/tdl 路线不做(账号 session 属凭证类,且有封号风险)。Bot API `getUpdates` 与 webhook 互斥,更新只保留 24 小时。
+9. **手动 Test workflow 不触发 Error Workflow**;端到端验收用 dummy(Stop and Error)由老板 Publish 后跑一次看 Monitor v2。
+10. **Act 290 于 2026-02-13 有更新**,`gate_rules` 入库前核对现行文本;KKLIU 批文文案只能逐字复用。
+11. **Phase 1 硬阻塞是公司书面许可**(Act 500 分销商发帖许可 + 广告守则 + 素材授权),公司回复周期长;模板已放 `docs/letters/permission-request-to-company.md`,老板只需填空转发。
+
+完整表(17 项 × 归属 / 老板最少动作 / 派单文字)在会话 scratchpad `wf/takeover-final.json`;统计口径:完全接手 2 项(第 1、15 项,老板只回一句批准)、部分接手 14 项、老板独做 1 项(第 17 项,Phase 2 再拍板)。
