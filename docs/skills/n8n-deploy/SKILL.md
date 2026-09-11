@@ -10,7 +10,7 @@ description: wabot 生态里任何 n8n 工作流改动与部署的流程。要�
 - **不用 REST 改 Active 或归档状态。** 这版 n8n 的激活 = 编辑器右上角「Publish」按钮,列表页 ⊖ 是 Archive。激活由老板亲手点;你只做内容更新与自测,然后告诉老板「可以 Publish」。
 - **不 git push。** 本地 commit 即可。
 - **不打印、不转述任何 token / key。** 凭证只放 n8n Credentials 或 `.env`,不进版本文件、不进执行数据、不进聊天。
-- **凭证类与破坏性操作先停下问老板**(CLAUDE.md 铁律 B / C / C2):换 token、删工作流、删表、清执行记录、改 DNS、改 webhook 地址。
+- **凭证「只写不记」(2026-09-11 起):** 可以把老板贴进本窗口或 `.env` 里已有的凭证写进 n8n Credentials / `.env`,但不打印、不回显、不进仓库与聊天;在第三方后台生成新秘密仍由老板亲手做。**破坏性操作先停下问老板**(CLAUDE.md 铁律 C / C2):删工作流、删表、清执行记录、改 DNS、改 webhook 地址。
 - **改 Core Logic(Brain)必须按 CLAUDE.md 第 1/2/3 节:** 三段哈希证明(改前 / 改后 / 部署后拉回)+ harness 回归报三个数(基线 / 本次 / 新增),新增失败必须为 0。
 
 ## 标准流程
