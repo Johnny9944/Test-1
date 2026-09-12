@@ -80,8 +80,8 @@
 
 | 会话 | 状态 | 已完成 | 进行中 | 等你 |
 |---|---|---|---|---|
-| CC-A wabot-ops(Fable) | idle | R22.9 上线并核对;**n8n 2.1.4 → 2.38.5 升级完成**(02:00Z 自动执行,4 个工作流 active 且 versionId 一致,API 200,零错误,旧容器保留);**R22.10 黑名单同步已上线**(2026-09-12 12:16Z,老板文字批准后由 CC-A 直接发布:BL-sync 激活并跑一次写入 160 个号、幂等;主线草稿发布,新增「命中黑名单→不回复+Telegram 提醒」;30 分钟观察 0 error、0 误提醒;回滚点 R22.9 activeVersionId bdbd698c);每天 07:00 MYT 自动同步,只增不删 | 待派:TASKS-CC-A-next.md 的 D-Enquiry 计数 → B 成交记账 → C 跟进提醒 | 18 个 TMP 的「删」 |
-| CC-B social-engine(Opus 5) | 派单中 | Supabase social schema 14 表 + v_funnel_weekly;Apps Script「Sheets bridge」已由老板部署并测通(密钥按只写不记自生成并写入 .env / n8n 凭证);SE-09 广告花销→Ratio report 草稿就绪 | 确认桥有 GET ?action=blocklist(缺则加,需老板「管理部署→新版本」重新部署);写 from-cc-b\\bridge-for-cc-a.md | Meta 只读 token:系统用户分配广告账户(查看效果)+ 生成新 token 只勾 ads_read / read_insights → 贴进 CC-B 窗口(只写不记) |
+| CC-A wabot-ops(Fable) | 等老板一句话 | R22.9;n8n 2.38.5;R22.10 黑名单同步已上线(12:16Z);18 个 TMP 已清理;**R22.11 Enquiry 计数已备好待发布**(草稿 versionId 3375e1ca,133 节点,00:15 收尾写入路径,harness 基线 79 → 本次 84,新增失败 0;写法:当天整值覆盖、历史不动) | 发布被 auto 模式分类器拦下(--publish / n8n execute 需人工批准) | 在 CC-A 窗口敲「上线 R22.11」(或 n8n 里发布草稿 3375e1ca);之后:B 成交记账 → C 跟进提醒 |
+| CC-B social-engine(Opus 5) | 等老板 token | Supabase social 14 表 + v_funnel_weekly;Sheets bridge 已部署测通(spend/enquiry/closed/blocklist,blocklist 实测 170 行);SE-09 广告花销→Ratio report 干跑到 /me 一步 | Meta token 报 190/460 OAuthException = 口令已被「撤销口令」一并撤销(尖括号已剔除仍失败) | 在 Business Suite 系统用户 01133439227 重新「生成口令」:应用 wabot、永不过期、只勾 ads_read + read_insights,生成后**不要再点撤销**,贴进 CC-B 窗口(不带尖括号);另:BotFather 换 social bot token |
 | CC-C tg-intel(Haiku) | idle | Telegram 完整导出(60 聊天,10 GB 含媒体)已处理:38 聊天 / 4.3K 消息;REPORT-telegram-corpus.md + 按产品线痛点/异议初稿(Documents\\wabot-intel) | — | 3 个公共群逐群「导出聊天记录」(JB Flexguard NEW Market🔥 / GesunD素材库 2.0 / Ruume 先锋者🦌,去掉媒体、JSON);建议 CC-C 切 Sonnet;BotFather /revoke 泄露过的 bot token |
 
 教训(2026-09-11/12):Telegram 批量导出勾了媒体会跑一整天(10 GB),纯文字十几分钟;Haiku 处理带空格括号的路径与多 MB JSON 容易误判「截断」,先复制到项目内简单路径再解析;auto 模式对项目目录之外的路径每条命令都会问,用 /add-dir 一次解决。
