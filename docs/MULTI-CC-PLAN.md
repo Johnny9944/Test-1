@@ -76,6 +76,18 @@
 
 云端巡检节奏:安静模式,有待办 30 分钟、无待办 90 分钟;00:00 UTC(08:00 MYT)写唯一一份晨报。
 
+## 7b. 进度快照(2026-09-12 06:05 UTC / 马来西亚 14:05,周六)
+
+| 会话 | 状态 | 已完成 | 进行中 | 等你 |
+|---|---|---|---|---|
+| CC-A wabot-ops(Fable) | 派单中 | R22.9 上线并核对;**n8n 2.1.4 → 2.38.5 升级完成**(02:00Z 自动执行,02:30Z 心跳成功,Monitor #450 / R22.9 #451 绿,4 个工作流 active 且 versionId 前后一致,API 200,零错误,旧容器保留可回滚);TASK.md 已记「2.38.5 起 PUT 须带 ?publishIfActive=false」 | 任务 A 黑名单同步 R22.10:只读核对 → dry-run 数字 → harness 三个数 → 待发布(BL-sync 新工作流未激活;主线改动 PUT 带 publishIfActive=false) | ① R22.10 待发布后:n8n 里 Publish BL-sync,主线改动回一句「批准 R22.10 上线」 ② 18 个 TMP 的「删」 |
+| CC-B social-engine(Opus 5) | 派单中 | Supabase social schema 14 表 + v_funnel_weekly;Apps Script「Sheets bridge」已由老板部署并测通(密钥按只写不记自生成并写入 .env / n8n 凭证);SE-09 广告花销→Ratio report 草稿就绪 | 确认桥有 GET ?action=blocklist(缺则加,需老板「管理部署→新版本」重新部署);写 from-cc-b\\bridge-for-cc-a.md | Meta 只读 token:系统用户分配广告账户(查看效果)+ 生成新 token 只勾 ads_read / read_insights → 贴进 CC-B 窗口(只写不记) |
+| CC-C tg-intel(Haiku) | idle | Telegram 完整导出(60 聊天,10 GB 含媒体)已处理:38 聊天 / 4.3K 消息;REPORT-telegram-corpus.md + 按产品线痛点/异议初稿(Documents\\wabot-intel) | — | 3 个公共群逐群「导出聊天记录」(JB Flexguard NEW Market🔥 / GesunD素材库 2.0 / Ruume 先锋者🦌,去掉媒体、JSON);建议 CC-C 切 Sonnet;BotFather /revoke 泄露过的 bot token |
+
+教训(2026-09-11/12):Telegram 批量导出勾了媒体会跑一整天(10 GB),纯文字十几分钟;Haiku 处理带空格括号的路径与多 MB JSON 容易误判「截断」,先复制到项目内简单路径再解析;auto 模式对项目目录之外的路径每条命令都会问,用 /add-dir 一次解决。
+
+云端巡检:周六 10:00Z、14:00Z 各一次;周日起可放宽到每 6 小时;安静模式不变。
+
 ## 8. 凭证规则更新:「只写不记」(老板 2026-09-11 授权)
 
 - 子会话可以**写入**凭证到它该在的地方:n8n Credentials(经公共 API 或 UI 路径)、本机 `.env`、n8n 环境变量;来源只能是老板贴进该窗口的值、或该会话 `.env` 里已合法持有的值。
