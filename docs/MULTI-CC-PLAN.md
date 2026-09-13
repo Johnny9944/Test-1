@@ -109,6 +109,8 @@
 | 3 | CC-B | 策略卡与案例分析入 Supabase social schema(新表 strategy_cards / case_analyses),含数据归属字段 | 待 2 出结果 |
 | 4 | CC-A | R22.13:Brain 按来源码/首句/语言判画像 → 读策略卡 → 只在公司规矩范围内选话术;Core Logic 变更走 CLAUDE.md 三段哈希 + harness 三个数(新增失败 0) | 待 3;先做 R22.12 ctwa_clid 落库 |
 
+**老板 09-14 00:08 MYT 定预算与口径**:每月 RM3,000(广告 + API + post 投放)由主控分配;Enquiry / A Client 由主控定义 → docs/BUDGET-AND-METRICS.md(工作流评审:3 分配方案 × 3 口径方案 → 4 评审 → 4 挑刺 → 修订)。要点:9–10 月只养系统、存弹药库;11 月起广告 2,190 + boost 200;Meta 账户花费限额 RM2,390(取代 1,500);Enquiry = 当天首次进线新号数;A Client = 当天客户发 ≥2 条且问价/购买/地址/付款;Closed/Sales 从 Sales 表按 Order Date 算;桥加 auto_daily 与 sync_sales 两个 action。待老板回:热客用哪个号亲自回。
+
 IG 检查(CC-B):本机没有可用的 IG/FB 凭证,做不了自动核对,写了 docs/ig-readiness-check.md(social-engine 仓库,commit 34ed020)给老板自查:已连 FB 的 IG 是否为 Business 账号、有无 ≥9 帖、是否在同一 Business Portfolio。
 
 ## 8. 凭证规则更新:「只写不记」(老板 2026-09-11 授权)
