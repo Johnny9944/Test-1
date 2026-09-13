@@ -111,6 +111,8 @@
 
 **老板 09-14 00:08 MYT 定预算与口径**:每月 RM3,000(广告 + API + post 投放)由主控分配;Enquiry / A Client 由主控定义 → docs/BUDGET-AND-METRICS.md(工作流评审:3 分配方案 × 3 口径方案 → 4 评审 → 4 挑刺 → 修订)。要点:9–10 月只养系统、存弹药库;11 月起广告 2,190 + boost 200;Meta 账户花费限额 RM2,390(取代 1,500);Enquiry = 当天首次进线新号数;A Client = 当天客户发 ≥2 条且问价/购买/地址/付款;Closed/Sales 从 Sales 表按 Order Date 算;桥加 auto_daily 与 sync_sales 两个 action。待老板回:热客用哪个号亲自回。
 
+**22:00Z(周一 06:00 MYT)快照**:CC-A 卡在导出查询的 ssh 权限提示(只读,输出存在自家 droplet),等老板按允许,之后队列里是 R22.11 口径改动;CC-B 桥 v2.1(auto_daily + sync_sales)已改好、自测 14/14,等老板一次部署;CC-C 知识库 + case-analyze + strategy-cards 管线已建好,等 CC-A 导出。老板今天:CC-A 按允许 → 部署桥 v2.1 → 在 CC-B 回「部署好了」;bot 点 Start;Meta 只读口令;账户花费限额 2,390;回「热客用哪个号回」。「上线 R22.11」等 CC-A 按新口径改完再敲。
+
 IG 检查(CC-B):本机没有可用的 IG/FB 凭证,做不了自动核对,写了 docs/ig-readiness-check.md(social-engine 仓库,commit 34ed020)给老板自查:已连 FB 的 IG 是否为 Business 账号、有无 ≥9 帖、是否在同一 Business Portfolio。
 
 ## 8. 凭证规则更新:「只写不记」(老板 2026-09-11 授权)
