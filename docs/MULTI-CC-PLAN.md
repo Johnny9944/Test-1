@@ -80,9 +80,9 @@
 
 | 会话 | 状态 | 已完成 | 进行中 | 等你 |
 |---|---|---|---|---|
-| CC-A wabot-ops(Fable) | 等老板一句话 | R22.9;n8n 2.38.5;R22.10 黑名单同步已上线(12:16Z);18 个 TMP 已清理;**R22.11 Enquiry 计数已备好待发布**(草稿 versionId 3375e1ca,133 节点,00:15 收尾写入路径,harness 基线 79 → 本次 84,新增失败 0;写法:当天整值覆盖、历史不动) | 发布被 auto 模式分类器拦下(--publish / n8n execute 需人工批准) | 在 CC-A 窗口敲「上线 R22.11」(或 n8n 里发布草稿 3375e1ca);之后:B 成交记账 → C 跟进提醒 |
-| CC-B social-engine(Opus 5) | 等老板 token | Supabase social 14 表 + v_funnel_weekly;Sheets bridge 已部署测通(spend/enquiry/closed/blocklist,blocklist 实测 170 行);SE-09 广告花销→Ratio report 干跑到 /me 一步 | Meta token 报 190/460 OAuthException = 口令已被「撤销口令」一并撤销(尖括号已剔除仍失败) | 在 Business Suite 系统用户 01133439227 重新「生成口令」:应用 wabot、永不过期、只勾 ads_read + read_insights,生成后**不要再点撤销**,贴进 CC-B 窗口(不带尖括号);另:BotFather 换 social bot token |
-| CC-C tg-intel(Haiku) | idle | Telegram 完整导出(60 聊天,10 GB 含媒体)已处理:38 聊天 / 4.3K 消息;REPORT-telegram-corpus.md + 按产品线痛点/异议初稿(Documents\\wabot-intel) | — | 3 个公共群逐群「导出聊天记录」(JB Flexguard NEW Market🔥 / GesunD素材库 2.0 / Ruume 先锋者🦌,去掉媒体、JSON);建议 CC-C 切 Sonnet;BotFather /revoke 泄露过的 bot token |
+| CC-A wabot-ops(Fable) | 等桥重新部署 | R22.9;n8n 2.38.5;R22.10 黑名单同步已上线;18 个 TMP 已清理;**R22.11 Enquiry 计数已备好**(草稿 3375e1ca,harness 79→84 新增 0,当天整值覆盖);**通道结论(2026-09-13)**:主线 WhatsApp 走 Meta 官方 Cloud API 直连(graph.facebook.com/v23.0,系统用户凭证)= (a),ctwa_clid 尚未落库(后续加) | 等 CC-B 桥 v2 重新部署后改 count→value 并发布 | ① 桥重新部署后在 CC-A 窗口敲「上线 R22.11」;之后:B 成交记账 → C 跟进提醒;ctwa_clid 落库排进 R22.12 |
+| CC-B social-engine(Opus 5) | 等老板重新部署 | Supabase social 14 表;Sheets bridge v1 已部署;**任务 0 结论**:主线正则 `/#FB_([A-Z]{2,8})\b/`,下划线后缀不兼容,v3.10 来源码定为连字符 `#FB_DNG-0911A`(docs/task0.md);**bridge v2 定稿**(enquiry/closed 整值覆盖+delta、spend>0、新增 sale/find/ping、blocklist 号码处理、表头容错)待部署;SE-09 干跑卡在 Meta token(190/460 已撤销) | 工具链/DEPLOY-SOP 进行中 | ① Apps Script 编辑器粘贴 Code.local.gs 覆盖 → 保存 → 部署 → 管理部署 → 铅笔 → 新版本 → 部署;② 重新生成 Meta 只读口令(wabot、永不过期、ads_read+read_insights,不带尖括号,生成后不再点撤销)贴进 CC-B 窗口;③ BotFather 换 social bot 口令 |
+| CC-C tg-intel(Haiku) | idle | Telegram 语料 38 聊天 4312 条(3 个公共群 HTML 已转 JSON,为子集);REPORT-telegram-corpus.md;**data/insights/{DNG,GSD,FLX,RUM}.json**(每线 5 条痛点,脱敏);**gate-ad-words.json** 55 条三语禁词/灰区词草稿(21 条来自语料、11 条 Meta 政策需老板核实) | — | 有空时核一遍禁词表;3 个公共群若要他人消息需逐群导出(可选) |
 
 教训(2026-09-11/12):Telegram 批量导出勾了媒体会跑一整天(10 GB),纯文字十几分钟;Haiku 处理带空格括号的路径与多 MB JSON 容易误判「截断」,先复制到项目内简单路径再解析;auto 模式对项目目录之外的路径每条命令都会问,用 /add-dir 一次解决。
 
