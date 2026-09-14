@@ -117,6 +117,8 @@
 
 **10:00Z(周一 18:00 MYT)快照**:三边全部等老板——脚本 ID(解锁桥 v2.1 → 凭证 → R22.12 上线)、一枚 Meta 口令六权限(解锁 SE-09、IG 发布、FB 发帖引擎的 Page token 失效)、bot Start、FB 发帖引擎修复后的 Publish 一句。CC-B 已备:素材库索引 130 文件、DNG-0917 广告包三条过闸(只建 PAUSED 不开)、Gate-Ad 165 词;CC-C 24 案例分析中。三平台方案 docs/CHANNELS-SETUP.md 已提交。
 
+**16:00Z(周二 00:00 MYT)快照**:CC-C 完成 24 个真实案例分析:8 张策略卡(6 张低置信,样本小)、公司打法知识库、案例报告;已派 CC-B 干跑入库(不 apply)+ 轻视频管线(ffmpeg 官方图幻灯 9:16,D'Nitez 3 条样片,不发布)。CC-A / CC-B 的阻塞与 10:00Z 相同,全部等老板四样(脚本 ID、一枚六权限 Meta 口令、bot Start、发帖引擎 Publish)。
+
 IG 检查(CC-B):本机没有可用的 IG/FB 凭证,做不了自动核对,写了 docs/ig-readiness-check.md(social-engine 仓库,commit 34ed020)给老板自查:已连 FB 的 IG 是否为 Business 账号、有无 ≥9 帖、是否在同一 Business Portfolio。
 
 ## 8. 凭证规则更新:「只写不记」(老板 2026-09-11 授权)
