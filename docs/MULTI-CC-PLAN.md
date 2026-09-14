@@ -115,6 +115,8 @@
 
 **04:00Z(周一 12:00 MYT)快照**:CC-A 脱敏导出完成(24 个会话,手机号已打码),0009 迁移已自行执行,R22.12(定稿口径)草稿 harness 90/90、publish 脚本与允许清单提案备好;CC-B clasp 登录完成,等老板贴 Apps Script 脚本 ID(容器绑定脚本 clasp list 看不到)后部署 v2.1 → 写 n8n 桥凭证 → SE-09 干跑;CC-C 允许清单等老板按一次,已派 24 个会话的真实案例分析 + 策略卡。上线顺序:桥 v2.1 部署 → 凭证写入 → CC-A ping 通过 → 贴 harness/哈希/差异 → 发布 R22.12 → 观察 30 分钟。
 
+**10:00Z(周一 18:00 MYT)快照**:三边全部等老板——脚本 ID(解锁桥 v2.1 → 凭证 → R22.12 上线)、一枚 Meta 口令六权限(解锁 SE-09、IG 发布、FB 发帖引擎的 Page token 失效)、bot Start、FB 发帖引擎修复后的 Publish 一句。CC-B 已备:素材库索引 130 文件、DNG-0917 广告包三条过闸(只建 PAUSED 不开)、Gate-Ad 165 词;CC-C 24 案例分析中。三平台方案 docs/CHANNELS-SETUP.md 已提交。
+
 IG 检查(CC-B):本机没有可用的 IG/FB 凭证,做不了自动核对,写了 docs/ig-readiness-check.md(social-engine 仓库,commit 34ed020)给老板自查:已连 FB 的 IG 是否为 Business 账号、有无 ≥9 帖、是否在同一 Business Portfolio。
 
 ## 8. 凭证规则更新:「只写不记」(老板 2026-09-11 授权)
