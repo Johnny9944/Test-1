@@ -119,6 +119,8 @@
 
 **16:00Z(周二 00:00 MYT)快照**:CC-C 完成 24 个真实案例分析:8 张策略卡(6 张低置信,样本小)、公司打法知识库、案例报告;已派 CC-B 干跑入库(不 apply)+ 轻视频管线(ffmpeg 官方图幻灯 9:16,D'Nitez 3 条样片,不发布)。CC-A / CC-B 的阻塞与 10:00Z 相同,全部等老板四样(脚本 ID、一枚六权限 Meta 口令、bot Start、发帖引擎 Publish)。
 
+**22:00Z(周二 06:00 MYT)快照**:系统侧无新阻塞。Meta 一枚口令已验证写入 CC-B;3 条竖版样片已出。链条仍卡老板三样:正确的 Apps Script 脚本 ID(两次贴的都是部署 ID)、系统用户资产分配(4 Page + IG + 广告账户)、广告账户 RM21.16 未付余额。三个副业判断已写 docs/SIDE-BUSINESS-REVIEW.md;CC-C 派每周只读市场扫描骨架。
+
 IG 检查(CC-B):本机没有可用的 IG/FB 凭证,做不了自动核对,写了 docs/ig-readiness-check.md(social-engine 仓库,commit 34ed020)给老板自查:已连 FB 的 IG 是否为 Business 账号、有无 ≥9 帖、是否在同一 Business Portfolio。
 
 ## 8. 凭证规则更新:「只写不记」(老板 2026-09-11 授权)
