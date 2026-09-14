@@ -17,6 +17,8 @@
 | 语料喂 prompt 的 JSON | CC-C | 4 线 JSON + 55 禁词已出;公司打法知识库 + 案例分析/策略卡管线已建 | 等 CC-A 导出后跑真实数据 → CC-B 入库 → R22.13 接 Brain |
 | 广告引擎纸面件 | 云端 | 方案 v1.1 已写,表/词表未起草 | 本周起草,不占 CC |
 
+> 09-14 下午:三平台(YouTube/TikTok/小红书)开号与接入方案见 docs/CHANNELS-SETUP.md(开号老板做,发布先半自动;Meta 验证要点含法定名称一字不差、证书有效期、Ezbiz 90 天下载窗口)。Meta 广告本周只建不开(PAUSED)。
+
 > 09-14 更新:老板每月预算 RM3,000 与 Ratio 口径已定(docs/BUDGET-AND-METRICS.md);Apps Script 部署改由 CC-B 用 clasp 做(老板一次登录);各 CC 加允许清单减少提示。老板剩余亲手项:Meta 企业验证提交(SSM 证书)、IG 养号开始、公司官方素材文件夹给 CC-B、回「热客用哪个号回」。
 
 ## 1. 今天(周日 09-13),老板约 30 分钟
