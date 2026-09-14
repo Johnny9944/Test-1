@@ -113,6 +113,8 @@
 
 **22:00Z(周一 06:00 MYT)快照**:CC-A 卡在导出查询的 ssh 权限提示(只读,输出存在自家 droplet),等老板按允许,之后队列里是 R22.11 口径改动;CC-B 桥 v2.1(auto_daily + sync_sales)已改好、自测 14/14,等老板一次部署;CC-C 知识库 + case-analyze + strategy-cards 管线已建好,等 CC-A 导出。老板今天:CC-A 按允许 → 部署桥 v2.1 → 在 CC-B 回「部署好了」;bot 点 Start;Meta 只读口令;账户花费限额 2,390;回「热客用哪个号回」。「上线 R22.11」等 CC-A 按新口径改完再敲。
 
+**04:00Z(周一 12:00 MYT)快照**:CC-A 脱敏导出完成(24 个会话,手机号已打码),0009 迁移已自行执行,R22.12(定稿口径)草稿 harness 90/90、publish 脚本与允许清单提案备好;CC-B clasp 登录完成,等老板贴 Apps Script 脚本 ID(容器绑定脚本 clasp list 看不到)后部署 v2.1 → 写 n8n 桥凭证 → SE-09 干跑;CC-C 允许清单等老板按一次,已派 24 个会话的真实案例分析 + 策略卡。上线顺序:桥 v2.1 部署 → 凭证写入 → CC-A ping 通过 → 贴 harness/哈希/差异 → 发布 R22.12 → 观察 30 分钟。
+
 IG 检查(CC-B):本机没有可用的 IG/FB 凭证,做不了自动核对,写了 docs/ig-readiness-check.md(social-engine 仓库,commit 34ed020)给老板自查:已连 FB 的 IG 是否为 Business 账号、有无 ≥9 帖、是否在同一 Business Portfolio。
 
 ## 8. 凭证规则更新:「只写不记」(老板 2026-09-11 授权)
