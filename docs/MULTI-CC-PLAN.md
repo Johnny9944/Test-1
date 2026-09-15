@@ -127,6 +127,8 @@
 
 **09-15 16:00Z(周三 00:00 MYT)快照**:R22.12.1 运行中。IG 登录验证码走 WhatsApp 到主线号行不通:Cloud API 对 Instagram 验证码消息回 unsupported(131051),读不到内容;改走 SMS/邮箱/Facebook 登录。Instagram 两个官方发送方已从 Brain 排除。老板 Meta 侧:广告账户因扣款失败停用(换卡 + 付 RM21.16 + 复审)、Page/IG 需从「Daelife Gesund Pro 护眼宝 小林」申请共享到 BS LIM BM1 再分配系统用户;SSM 网站维护,Ezbiz 待明早。
 
+**09-15 22:00Z(周三 06:00 MYT)晨报**:R22.12.1 在线;三边夜间无新动作。派 CC-B 小红书 Ruume 首周 3 帖内容包(素人日常保养、过 Gate-Ad、不导流);向 CC-A 要过夜运行数与 09-11~15 Enquiry 五个数。老板今天:广告账户换卡付款复审、Page/IG 申请共享到 BS LIM BM1 并分配系统用户、业务信息法定名称、Ezbiz 续证 + Meta 验证、小红书开号。
+
 IG 检查(CC-B):本机没有可用的 IG/FB 凭证,做不了自动核对,写了 docs/ig-readiness-check.md(social-engine 仓库,commit 34ed020)给老板自查:已连 FB 的 IG 是否为 Business 账号、有无 ≥9 帖、是否在同一 Business Portfolio。
 
 ## 8. 凭证规则更新:「只写不记」(老板 2026-09-11 授权)
