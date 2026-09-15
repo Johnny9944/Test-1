@@ -123,6 +123,8 @@
 
 **09-15 10:00Z(周二 18:00 MYT)快照**:三个本地 CC 重启后已接回(会话号不变)。CC-A:R22.12 就绪(harness 90/90、哈希稳定),仍卡桥凭证 bad key → 改为让 CC-B 新建凭证 sheets-webapp-secret-v21 并报 id,CC-A 切引用后上线;等待期间写 R22.13 方案 + replay-eval 基线。CC-B:桥 v2.1 已部署验收 3/3,等老板分配系统用户资产与结清 RM21.16 才能做 IG 审计/SE-09。CC-C:第一期周扫描已出(data/insights/weekly-scan-20260915.md),每周一 06:00 MYT 例行已设。新文档:LEARNING-LOOP.md。
 
+**09-15 12:07Z(周二 20:07 MYT)上线**:R22.12.1 已发布(versionId 5eebc370,回滚点 4214edf1):Enquiry 按定稿口径 SQL 全量重算、每小时写回 Ratio 主表 + AUTO_daily、桥凭证 sheets-webapp-secret-v21、30 分钟观察 0 error 0 告警、bad key 告警已消。主线四列自动化:Enquiry ✓、Closed/Sales(桥 sync_sales ✓)、Advertisment(SE-09 等资产分配)。
+
 IG 检查(CC-B):本机没有可用的 IG/FB 凭证,做不了自动核对,写了 docs/ig-readiness-check.md(social-engine 仓库,commit 34ed020)给老板自查:已连 FB 的 IG 是否为 Business 账号、有无 ≥9 帖、是否在同一 Business Portfolio。
 
 ## 8. 凭证规则更新:「只写不记」(老板 2026-09-11 授权)
